@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flow Finance — เข้าสู่ระบบ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f1e;
+      --surface: #111827;
+      --surface-2: #1a2235;
+      --border: rgba(255,255,255,0.08);
+      --border-focus: rgba(99,179,255,0.5);
+      --text-primary: #f0f4ff;
+      --text-secondary: #8b9ab8;
+      --text-muted: #4a5568;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59,130,246,0.25);
+      --accent-light: #60a5fa;
+      --green: #10b981;
+      --green-glow: rgba(16,185,129,0.2);
+      --error: #f87171;
+      --radius: 14px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Sarabun', 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    /* ── Animated background ── */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: drift 20s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 600px; height: 600px; background: #1e40af; top: -200px; left: -100px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; background: #0d9488; bottom: -150px; right: -100px; animation-delay: -8s; }
+    .orb-3 { width: 300px; height: 300px; background: #7c3aed; top: 40%; right: 20%; animation-delay: -4s; }
+    @keyframes drift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(40px, 30px) scale(1.1); }
+    }
+
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── Layout ── */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* LEFT PANEL */
+    .panel-left {
+      display: none;
+      flex: 1;
+      padding: 60px;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid var(--border);
+    }
+    @media (min-width: 900px) { .panel-left { display: flex; } }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Sora', sans-serif;
+      font-size: 22px; font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .brand-name { color: var(--text-primary); }
+    .brand-name span { color: var(--accent-light); }
+
+    .hero-text {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; max-width: 480px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-glow); border: 1px solid rgba(16,185,129,0.3);
+      color: var(--green); padding: 5px 14px; border-radius: 999px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+      margin-bottom: 24px; width: fit-content;
+    }
+    .hero-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .hero-title {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(32px, 3.5vw, 48px);
+      font-weight: 700; line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+    .hero-title .hl {
+      background: linear-gradient(135deg, #60a5fa, #34d399);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-desc { color: var(--text-secondary); font-size: 16px; line-height: 1.7; }
+
+    .stats-row {
+      display: flex; gap: 28px;
+    }
+    .stat { }
+    .stat-num {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px; font-weight: 700;
+      background: linear-gradient(135deg, #f0f4ff, #60a5fa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-label { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+    .testimonial {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; margin-top: 0;
+    }
+    .testimonial-text { color: var(--text-secondary); font-size: 14px; line-height: 1.8; font-style: italic; margin-bottom: 14px; }
+    .testimonial-author { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: white;
+    }
+    .author-name { font-size: 13px; font-weight: 600; }
+    .author-role { font-size: 11px; color: var(--text-muted); }
+
+    /* RIGHT PANEL */
+    .panel-right {
+      display: flex;
+      align-items: center; justify-content: center;
+      padding: 32px 24px;
+      flex: 0 0 100%;
+    }
+    @media (min-width: 900px) { .panel-right { flex: 0 0 440px; } }
+
+    .card {
+      width: 100%; max-width: 400px;
+      background: rgba(17,24,39,0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+      animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* Mobile brand */
+    .mobile-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Sora', sans-serif;
+      font-size: 20px; font-weight: 700;
+      margin-bottom: 32px;
+    }
+    @media (min-width: 900px) { .mobile-brand { display: none; } }
+
+    .card-header { margin-bottom: 28px; }
+    .card-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 24px; font-weight: 700;
+      letter-spacing: -0.5px; margin-bottom: 6px;
+    }
+    .card-sub { color: var(--text-secondary); font-size: 14px; }
+
+    /* Google button */
+    .btn-google {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 13px 20px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 15px; font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      margin-bottom: 24px;
+    }
+    .btn-google:hover {
+      background: var(--surface);
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .btn-google:active { transform: translateY(0); }
+    .google-logo { width: 20px; height: 20px; flex-shrink: 0; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px;
+    }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+
+    /* Form */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; margin-bottom: 6px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); pointer-events: none;
+      display: flex; align-items: center;
+    }
+    .form-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 14px 13px 42px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 15px; color: var(--text-primary);
+      transition: all 0.2s; outline: none;
+    }
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-input:focus {
+      border-color: var(--border-focus);
+      background: rgba(30,40,60,0.8);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .form-input.error { border-color: var(--error); }
+
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; padding: 4px; display: flex; align-items: center;
+      transition: color 0.2s;
+    }
+    .pw-toggle:hover { color: var(--text-primary); }
+
+    .form-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .checkbox-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .checkbox-wrap input[type="checkbox"] { display: none; }
+    .custom-checkbox {
+      width: 18px; height: 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface-2);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .checkbox-wrap input:checked + .custom-checkbox {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .checkbox-wrap input:checked + .custom-checkbox::after {
+      content: '';
+      width: 10px; height: 6px;
+      border-left: 2px solid white;
+      border-bottom: 2px solid white;
+      transform: rotate(-45deg) translateY(-1px);
+    }
+    .checkbox-label { font-size: 13px; color: var(--text-secondary); user-select: none; }
+
+    .link {
+      color: var(--accent-light); text-decoration: none;
+      font-size: 13px; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .link:hover { color: white; }
+
+    /* Submit button */
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      border: none; border-radius: var(--radius);
+      color: white;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 16px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative; overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(59,130,246,0.4); }
+    .btn-primary:hover::after { opacity: 1; }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-primary .btn-text { transition: opacity 0.2s; }
+    .btn-primary .btn-loader {
+      display: none; position: absolute; inset: 0;
+      align-items: center; justify-content: center;
+    }
+    .btn-primary.loading .btn-text { opacity: 0; }
+    .btn-primary.loading .btn-loader { display: flex; }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .signup-row {
+      text-align: center; font-size: 14px; color: var(--text-secondary);
+    }
+
+    /* Toast */
+    .toast-wrap {
+      position: fixed; top: 24px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      min-width: 280px; max-width: 360px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      animation: toastIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+      font-size: 14px;
+    }
+    .toast.success { border-color: rgba(16,185,129,0.4); }
+    .toast.error   { border-color: rgba(248,113,113,0.4); }
+    .toast-icon { font-size: 18px; flex-shrink: 0; }
+    .toast-msg { flex: 1; line-height: 1.4; }
+    .toast.success .toast-msg { color: #d1fae5; }
+    .toast.error   .toast-msg { color: #fecaca; }
+    @keyframes toastIn {
+      from { opacity:0; transform: translateX(30px); }
+      to   { opacity:1; transform: translateX(0); }
+    }
+
+    /* Modal backdrop */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      transform: scale(0.95); transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+    .modal-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 20px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .modal-sub { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: none;
+      color: var(--text-muted); cursor: pointer; font-size: 20px;
+      padding: 6px; border-radius: 8px; transition: all 0.2s;
+    }
+    .modal-close:hover { color: var(--text-primary); background: var(--surface-2); }
+    .modal { position: relative; }
+
+    /* Error message */
+    .field-error { color: var(--error); font-size: 12px; margin-top: 5px; display: none; }
+    .field-error.show { display: block; }
+
+    /* Success page */
+    .success-screen {
+      display: none;
+      flex-direction: column; align-items: center;
+      text-align: center; padding: 20px 0;
+    }
+    .success-screen.show { display: flex; }
+    .success-icon {
+      width: 72px; height: 72px;
+      background: var(--green-glow);
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin-bottom: 20px;
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0); opacity:0; }
+      to   { transform: scale(1); opacity:1; }
+    }
+    .success-title { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .success-sub { color: var(--text-secondary); font-size: 14px; line-height: 1.6; margin-bottom: 28px; }
+    .progress-bar {
+      width: 100%; height: 3px;
+      background: var(--surface-2); border-radius: 3px;
+      overflow: hidden; margin-bottom: 12px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 3px; width: 0%;
+      animation: progressAnim 2.5s linear forwards;
+    }
+    @keyframes progressAnim { to { width: 100%; } }
+    .progress-label { font-size: 12px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<div class="grid-bg"></div>
+
+<div class="page">
+  <!-- LEFT PANEL -->
+  <div class="panel-left">
+    <div class="brand">
+      <div class="brand-icon">💸</div>
+      <span class="brand-name">Flow<span>Finance</span></span>
+    </div>
+
+    <div class="hero-text">
+      <div class="hero-badge">✦ ระบบการเงินระดับองค์กร</div>
+      <h1 class="hero-title">
+        จัดการการเงิน<br/>
+        ของคุณได้<br/>
+        <span class="hl">อย่างมืออาชีพ</span>
+      </h1>
+      <p class="hero-desc">
+        วิเคราะห์รายรับ-รายจ่าย ติดตามงบประมาณ<br/>
+        และรายงานทางการเงินในที่เดียว
+      </p>
+    </div>
+
+    <div>
+      <div class="stats-row" style="margin-bottom: 28px;">
+        <div class="stat">
+          <div class="stat-num">50K+</div>
+          <div class="stat-label">ผู้ใช้งาน</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">99.9%</div>
+          <div class="stat-label">Uptime</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">฿2B+</div>
+          <div class="stat-label">จัดการแล้ว</div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <p class="testimonial-text">"Flow Finance เปลี่ยนวิธีที่เราดูแลการเงินของบริษัทโดยสิ้นเชิง รายงานแบบ real-time ช่วยเราตัดสินใจได้รวดเร็วขึ้นมาก"</p>
+        <div class="testimonial-author">
+          <div class="avatar">ส</div>
+          <div>
+            <div class="author-name">สมชาย วงศ์ไทย</div>
+            <div class="author-role">CFO, Thai Tech Group</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+    <div class="card">
+      <div class="mobile-brand">
+        <div class="brand-icon" style="width:32px;height:32px;font-size:16px;">💸</div>
+        <span style="font-weight:700;">Flow<span style="color:#60a5fa">Finance</span></span>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div class="card-header">
+          <h2 class="card-title">ยินดีต้อนรับกลับ 👋</h2>
+          <p class="card-sub">เข้าสู่ระบบเพื่อจัดการการเงินของคุณ</p>
+        </div>
+
+        <button class="btn-google" onclick="handleGoogleLogin()">
+          <svg class="google-logo" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          เข้าสู่ระบบด้วย Google
+        </button>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">หรือใช้อีเมลและรหัสผ่าน</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <form id="loginFormEl" onsubmit="handleLogin(event)" novalidate>
+          <div class="form-group">
+            <label class="form-label">อีเมล</label>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+              </span>
+              <input id="email" type="email" class="form-input" placeholder="your@email.com" autocomplete="email" />
+            </div>
+            <div id="emailError" class="field-error">กรุณากรอกอีเมลที่ถูกต้อง</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">รหัสผ่าน</label>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input id="password" type="password" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="pw-toggle" onclick="togglePassword()" id="pwToggle" title="แสดง/ซ่อนรหัสผ่าน">
+                <svg id="eyeIcon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <div id="passwordError" class="field-error">กรุณากรอกรหัสผ่าน</div>
+          </div>
+
+          <div class="form-row">
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="remember" />
+              <div class="custom-checkbox"></div>
+              <span class="checkbox-label">จดจำฉัน</span>
+            </label>
+            <a href="#" class="link" onclick="openForgot(event)">ลืมรหัสผ่าน?</a>
+          </div>
+
+          <button type="submit" class="btn-primary" id="loginBtn">
+            <span class="btn-text">เข้าสู่ระบบ</span>
+            <span class="btn-loader"><div class="spinner"></div></span>
+          </button>
+        </form>
+
+        <div class="signup-row">
+          ยังไม่มีบัญชี?&nbsp;<a href="#" class="link" onclick="openSignup(event)">สมัครสมาชิกฟรี</a>
+        </div>
+      </div>
+
+      <!-- SUCCESS SCREEN -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-icon">✓</div>
+        <div class="success-title">เข้าสู่ระบบสำเร็จ!</div>
+        <p class="success-sub">ยินดีต้อนรับกลับสู่ Flow Finance<br/>กำลังพาคุณไปยังแดชบอร์ด…</p>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div class="progress-label">กำลังโหลด…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgotModal" onclick="closeModalOutside(event, 'forgotModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('forgotModal')">✕</button>
+    <div style="font-size:28px;margin-bottom:12px;">🔑</div>
+    <div class="modal-title">ลืมรหัสผ่าน?</div>
+    <p class="modal-sub">กรอกอีเมลที่ลงทะเบียนไว้ เราจะส่งลิงก์สำหรับรีเซ็ตรหัสผ่านให้คุณ</p>
+    <div class="form-group">
+      <label class="form-label">อีเมล</label>
+      <div class="input-wrap">
+        <span class="input-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+        </span>
+        <input id="forgotEmail" type="email" class="form-input" placeholder="your@email.com" />
+      </div>
+    </div>
+    <button class="btn-primary" onclick="handleForgot()" id="forgotBtn" style="margin-bottom:0">
+      <span class="btn-text">ส่งลิงก์รีเซ็ต</span>
+      <span class="btn-loader"><div class="spinner"></div></span>
+    </button>
+  </div>
+</div>
+
+<!-- SIGNUP MODAL -->
+<div class="modal-overlay" id="signupModal" onclick="closeModalOutside(event, 'signupModal')">
+  <div class="modal" style="max-width: 460px;">
+    <button class="modal-close" onclick="closeModal('signupModal')">✕</button>
+    <div style="font-size:28px;margin-bottom:12px;">🚀</div>
+    <div class="modal-title">สมัครสมาชิก</div>
+    <p class="modal-sub">เริ่มต้นใช้งาน Flow Finance ฟรี ไม่ต้องใช้บัตรเครดิต</p>
+
+    <button class="btn-google" onclick="handleGoogleLogin()" style="margin-bottom:20px;">
+      <svg class="google-logo" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      สมัครด้วย Google
+    </button>
+
+    <div class="divider"><div class="divider-line"></div><span class="divider-text">หรือกรอกข้อมูล</span><div class="divider-line"></div></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">ชื่อ</label>
+        <input id="signupFirst" type="text" class="form-input" placeholder="สมชาย" style="padding-left:14px;" />
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">นามสกุล</label>
+        <input id="signupLast" type="text" class="form-input" placeholder="วงศ์ไทย" style="padding-left:14px;" />
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">อีเมล</label>
+      <div class="input-wrap">
+        <span class="input-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+        </span>
+        <input id="signupEmail" type="email" class="form-input" placeholder="your@email.com" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">รหัสผ่าน</label>
+      <div class="input-wrap">
+        <span class="input-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </span>
+        <input id="signupPassword" type="password" class="form-input" placeholder="อย่างน้อย 8 ตัวอักษร" />
+      </div>
+      <div id="pwStrength" style="margin-top:6px; font-size:12px; color:var(--text-muted);"></div>
+    </div>
+
+    <button class="btn-primary" onclick="handleSignup()" id="signupBtn" style="margin-bottom:0">
+      <span class="btn-text">สร้างบัญชีฟรี</span>
+      <span class="btn-loader"><div class="spinner"></div></span>
+    </button>
+
+    <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:14px;line-height:1.6;">
+      การสมัครสมาชิกถือว่าคุณยอมรับ <a href="#" class="link" style="font-size:11px;">ข้อกำหนดการใช้งาน</a> และ <a href="#" class="link" style="font-size:11px;">นโยบายความเป็นส่วนตัว</a>
+    </p>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+  // ── Utility ──────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const wrap = document.getElementById('toastWrap');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span><span class="toast-msg">${msg}</span>`;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(30px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, 3500);
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.classList.toggle('loading', loading);
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeModalOutside(e, id) { if (e.target.id === id) closeModal(id); }
+  function openForgot(e) { e.preventDefault(); openModal('forgotModal'); }
+  function openSignup(e) { e.preventDefault(); openModal('signupModal'); }
+
+  // ── Password toggle ──────────────────────────────────
+  function togglePassword() {
+    const pw = document.getElementById('password');
+    const icon = document.getElementById('eyeIcon');
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    icon.innerHTML = show
+      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+
+  // ── Validation ───────────────────────────────────────
+  function validateEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  function showError(id, show) {
+    const el = document.getElementById(id);
+    el && el.classList.toggle('show', show);
+    const inputId = id.replace('Error', '');
+    const input = document.getElementById(inputId);
+    input && input.classList.toggle('error', show);
+  }
+
+  // ── Login ─────────────────────────────────────────────
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    let valid = true;
+
+    if (!validateEmail(email)) { showError('emailError', true); valid = false; }
+    else showError('emailError', false);
+
+    if (!password) { showError('passwordError', true); valid = false; }
+    else showError('passwordError', false);
+
+    if (!valid) return;
+
+    setLoading('loginBtn', true);
+    setTimeout(() => {
+      setLoading('loginBtn', false);
+      // Show success screen
+      document.getElementById('loginForm').style.display = 'none';
+      const s = document.getElementById('successScreen');
+      s.classList.add('show');
+      setTimeout(() => { showToast('เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ', 'success'); }, 400);
+    }, 1800);
+  }
+
+  // ── Google Login ──────────────────────────────────────
+  function handleGoogleLogin() {
+    showToast('กำลังเชื่อมต่อกับ Google…', 'success');
+    // In production: window.location.href = '/auth/google';
+    setTimeout(() => showToast('Google Sign-In พร้อมใช้งาน (ต้องตั้งค่า OAuth)', 'success'), 800);
+  }
+
+  // ── Forgot Password ───────────────────────────────────
+  function handleForgot() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!validateEmail(email)) { showToast('กรุณากรอกอีเมลที่ถูกต้อง', 'error'); return; }
+    setLoading('forgotBtn', true);
+    setTimeout(() => {
+      setLoading('forgotBtn', false);
+      closeModal('forgotModal');
+      showToast(`ส่งลิงก์รีเซ็ตไปยัง ${email} แล้ว`, 'success');
+      document.getElementById('forgotEmail').value = '';
+    }, 1500);
+  }
+
+  // ── Signup ────────────────────────────────────────────
+  document.getElementById('signupPassword')?.addEventListener('input', function() {
+    const v = this.value; const el = document.getElementById('pwStrength');
+    if (!v) { el.textContent=''; return; }
+    let strength=0, msg='', color='';
+    if (v.length >= 8) strength++;
+    if (/[A-Z]/.test(v)) strength++;
+    if (/[0-9]/.test(v)) strength++;
+    if (/[^A-Za-z0-9]/.test(v)) strength++;
+    if (strength <= 1) { msg='ความปลอดภัยต่ำ'; color='var(--error)'; }
+    else if (strength === 2) { msg='ความปลอดภัยปานกลาง'; color='#f59e0b'; }
+    else { msg='ความปลอดภัยดี ✓'; color='var(--green)'; }
+    el.textContent = msg; el.style.color = color;
+  });
+
+  function handleSignup() {
+    const email = document.getElementById('signupEmail').value.trim();
+    const pw = document.getElementById('signupPassword').value;
+    const first = document.getElementById('signupFirst').value.trim();
+    if (!first) { showToast('กรุณากรอกชื่อ', 'error'); return; }
+    if (!validateEmail(email)) { showToast('กรุณากรอกอีเมลที่ถูกต้อง', 'error'); return; }
+    if (pw.length < 8) { showToast('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร', 'error'); return; }
+    setLoading('signupBtn', true);
+    setTimeout(() => {
+      setLoading('signupBtn', false);
+      closeModal('signupModal');
+      showToast(`สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ ${first} 🎉`, 'success');
+    }, 1800);
+  }
+
+  // ── Keyboard shortcut ────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeModal('forgotModal');
+      closeModal('signupModal');
+    }
+  });
+
+  // ── Demo: pre-fill button ─────────────────────────────
+  // Quick demo fill for testing
+  const demoNote = document.createElement('div');
+  demoNote.style.cssText = 'text-align:center;margin-top:16px;';
+  demoNote.innerHTML = `<button onclick="demoFill()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit;">กรอกข้อมูลทดสอบ</button>`;
+  document.getElementById('loginForm').appendChild(demoNote);
+
+  function demoFill() {
+    document.getElementById('email').value = 'demo@flowfinance.co.th';
+    document.getElementById('password').value = 'Demo1234!';
+    showToast('กรอกข้อมูลทดสอบแล้ว กด "เข้าสู่ระบบ"', 'success');
+  }
+</script>
+</body>
+</html>

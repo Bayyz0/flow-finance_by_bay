@@ -1,0 +1,7 @@
+DATABASE_URL=mysql://root:Bay@126200789@localhost:3307/flow_finance
+JWT_SECRET=mysecretkey1234567890abcdefghijklmnop
+OAUTH_SERVER_URL=http://localhost:3000
+VITE_OAUTH_PORTAL_URL=http://localhost:3000
+VITE_APP_ID=flow-finance-tracker
+PORT=3000
+NODE_ENV=development
