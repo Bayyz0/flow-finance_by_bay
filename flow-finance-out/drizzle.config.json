@@ -3,10 +3,6 @@
   "out": "./drizzle",
   "dialect": "mysql",
   "dbCredentials": {
-    "host": "mysql.railway.internal",
-    "port": 3306,
-    "user": "${{ MySQL.MYSQLUSER }}",
-    "password": "${{ MySQL.MYSQLPASSWORD }}",
-    "database": "${{ MySQL.MYSQL_DATABASE }}"
+    "url": "mysql://placeholder"
   }
 }
