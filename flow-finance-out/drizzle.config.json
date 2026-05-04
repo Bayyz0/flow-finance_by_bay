@@ -3,10 +3,6 @@
   "out": "./drizzle",
   "dialect": "mysql",
   "dbCredentials": {
-    "host": "localhost",
-    "port": 3307,
-    "user": "root",
-    "password": "Bay@126200789",
-    "database": "flow_finance"
+    "url": "${DATABASE_URL}"
   }
 }
