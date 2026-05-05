@@ -3,6 +3,6 @@
   "out": "./drizzle",
   "dialect": "mysql",
   "dbCredentials": {
-    "url": "env(DATABASE_URL)"
+    "url": "mysql://placeholder:placeholder@localhost:3306/placeholder"
   }
 }
