@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import { execSync } from "child_process";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
@@ -12,18 +13,34 @@ import { serveStatic, setupVite } from "./vite";
 // crashing silently with a confusing error deep in the DB layer.
 function validateEnv() {
   const warnings: string[] = [];
-
   if (!process.env.DATABASE_URL) {
     warnings.push("DATABASE_URL is not set — database features will not work");
   }
   if (!process.env.JWT_SECRET) {
     warnings.push("JWT_SECRET is not set — authentication will not work");
   }
-
   if (warnings.length > 0) {
     console.warn("\n⚠️  Missing environment variables:");
     warnings.forEach(w => console.warn(`   • ${w}`));
     console.warn("   Copy .env.example to .env and fill in the required values.\n");
+  }
+}
+
+function runMigrations() {
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️  Skipping migrations — DATABASE_URL not set");
+    return;
+  }
+  try {
+    console.log("🔄 Running database migrations...");
+    execSync("npx drizzle-kit migrate", {
+      stdio: "inherit",
+      env: process.env,
+    });
+    console.log("✅ Migrations complete");
+  } catch (err) {
+    console.error("❌ Migration failed:", err);
+    process.exit(1);
   }
 }
 
@@ -49,11 +66,17 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   validateEnv();
 
+  // Run migrations before starting server
+  if (process.env.NODE_ENV === "production") {
+    runMigrations();
+  }
+
   const app = express();
   const server = createServer(app);
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
   registerStorageProxy(app);
 
   app.use(
