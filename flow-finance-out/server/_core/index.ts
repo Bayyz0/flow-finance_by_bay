@@ -2,14 +2,14 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
-import mysql from "mysql2/promise";
+import { drizzle } from "drizzle-orm/mysql2";
+import { sql } from "drizzle-orm";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
-// FIX: validate required env vars at startup
 function validateEnv() {
   const warnings: string[] = [];
   if (!process.env.DATABASE_URL) {
@@ -32,9 +32,9 @@ async function runMigrations() {
     return;
   }
   console.log("🔄 Running database migrations...");
-  const connection = await mysql.createConnection(databaseUrl);
   try {
-    await connection.execute(`
+    const db = drizzle(databaseUrl);
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(50) NOT NULL UNIQUE,
@@ -47,7 +47,7 @@ async function runMigrations() {
         last_signed_in TIMESTAMP NULL
       )
     `);
-    await connection.execute(`
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS accounts (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -59,7 +59,7 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       )
     `);
-    await connection.execute(`
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS categories (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -71,7 +71,7 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       )
     `);
-    await connection.execute(`
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS transactions (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -86,7 +86,7 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       )
     `);
-    await connection.execute(`
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS recurring_transactions (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -103,7 +103,7 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       )
     `);
-    await connection.execute(`
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS tax_configs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -115,7 +115,7 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       )
     `);
-    await connection.execute(`
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS audit_logs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT,
@@ -128,8 +128,6 @@ async function runMigrations() {
   } catch (err) {
     console.error("❌ Migration failed:", err);
     throw err;
-  } finally {
-    await connection.end();
   }
 }
 
@@ -155,7 +153,6 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   validateEnv();
 
-  // Run migrations before starting server in production
   if (process.env.NODE_ENV === "production") {
     await runMigrations();
   }
