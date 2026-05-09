@@ -1,16 +1,23 @@
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import { InsertUser, UpdateUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let poolConnection: mysql.Pool | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   const databaseUrl = process.env.DATABASE_URL ?? ENV.databaseUrl;
+  
   if (!_db && databaseUrl) {
     try {
-      _db = drizzle(databaseUrl);
+      if (!poolConnection) {
+        // สร้าง Connection Pool เพื่อใช้กับ Drizzle MySQL2
+        poolConnection = mysql.createPool(databaseUrl);
+      }
+      _db = drizzle(poolConnection);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -43,7 +50,6 @@ export async function upsertUser(user: UpdateUser): Promise<void> {
   try {
     // If passwordHash is not provided, this is an update operation
     if (user.passwordHash === undefined) {
-      // For updates, we need to build the update object
       const updateData: Partial<Omit<InsertUser, 'id' | 'createdAt' | 'updatedAt'>> = {};
       
       if (user.name !== undefined) updateData.name = user.name;
@@ -57,14 +63,12 @@ export async function upsertUser(user: UpdateUser): Promise<void> {
       return;
     }
 
-    // For inserts/updates with passwordHash, use insert with onDuplicateKeyUpdate
     const insertValues: InsertUser = {
       username: user.username,
       passwordHash: user.passwordHash,
       lastSignedIn: user.lastSignedIn || new Date(),
     };
 
-    // Add optional fields
     if (user.name !== undefined) insertValues.name = user.name;
     if (user.email !== undefined) insertValues.email = user.email;
     if (user.role !== undefined) insertValues.role = user.role;
@@ -74,7 +78,6 @@ export async function upsertUser(user: UpdateUser): Promise<void> {
       lastSignedIn: insertValues.lastSignedIn,
     };
 
-    // Add optional fields to update set
     if (user.name !== undefined) updateSet.name = user.name;
     if (user.email !== undefined) updateSet.email = user.email;
     if (user.role !== undefined) updateSet.role = user.role;
