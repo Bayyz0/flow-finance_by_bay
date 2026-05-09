@@ -25,9 +25,6 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: ["localhost", "127.0.0.1"],
-    // FIX: proxy /api to Express backend so there are no CORS errors in dev.
-    // Express and Vite run on the same port (3000) via setupVite() middleware,
-    // so this proxy is mainly a safety net if you run them separately.
     proxy: {
       "/api": {
         target: "http://localhost:3000",
